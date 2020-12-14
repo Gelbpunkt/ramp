@@ -14,14 +14,12 @@
 
 #![allow(improper_ctypes)]
 
+use super::{copy_rest, same_or_separate};
 use ll::limb::Limb;
 use ll::limb_ptr::{Limbs, LimbsMut};
-use super::{copy_rest, same_or_separate};
 
 #[allow(dead_code)]
-unsafe fn add_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
-                        mut n: i32) -> Limb {
-
+unsafe fn add_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs, mut n: i32) -> Limb {
     let mut carry = Limb(0);
 
     loop {
@@ -35,12 +33,13 @@ unsafe fn add_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
         *wp = rl;
 
         n -= 1;
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
 
         wp = wp.offset(1);
         xp = xp.offset(1);
         yp = yp.offset(1);
-
     }
 
     carry
@@ -52,11 +51,11 @@ unsafe fn add_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
  */
 #[inline]
 #[cfg(asm)]
-pub unsafe fn add_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs,
-                    n: i32) -> Limb {
-    #[cfg(all(not(feature="fallbacks"),target_arch="x86_64"))]
-    extern "C" { fn ramp_add_n(wp: *mut Limb, xp: *const Limb, yp: *const Limb,
-                               n: i32) -> Limb; }
+pub unsafe fn add_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) -> Limb {
+    #[cfg(all(not(feature = "fallbacks"), target_arch = "x86_64"))]
+    extern "C" {
+        fn ramp_add_n(wp: *mut Limb, xp: *const Limb, yp: *const Limb, n: i32) -> Limb;
+    }
 
     debug_assert!(n >= 1);
     debug_assert!(same_or_separate(wp, n, xp, n));
@@ -69,10 +68,9 @@ pub unsafe fn add_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs,
  * Adds the `n` least signficant limbs of `xp` and `yp`, storing the result in {wp, n}.
  * If there was a carry, it is returned.
  */
-#[cfg(any(feature="fallbacks",not(asm)))]
+#[cfg(any(feature = "fallbacks", not(asm)))]
 #[inline]
-pub unsafe fn add_n(wp: LimbsMut, xp: Limbs, yp: Limbs,
-                    n: i32) -> Limb {
+pub unsafe fn add_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) -> Limb {
     debug_assert!(n >= 1);
     debug_assert!(same_or_separate(wp, n, xp, n));
     debug_assert!(same_or_separate(wp, n, yp, n));
@@ -81,8 +79,7 @@ pub unsafe fn add_n(wp: LimbsMut, xp: Limbs, yp: Limbs,
 }
 
 #[allow(dead_code)]
-unsafe fn sub_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
-                        mut n: i32) -> Limb {
+unsafe fn sub_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs, mut n: i32) -> Limb {
     let mut carry = Limb(0);
 
     debug_assert!(n >= 1);
@@ -100,12 +97,13 @@ unsafe fn sub_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
         *wp = rl;
 
         n -= 1;
-        if n == 0 { break; }
+        if n == 0 {
+            break;
+        }
 
         wp = wp.offset(1);
         xp = xp.offset(1);
         yp = yp.offset(1);
-
     }
 
     carry
@@ -117,11 +115,9 @@ unsafe fn sub_n_generic(mut wp: LimbsMut, mut xp: Limbs, mut yp: Limbs,
  */
 #[cfg(asm)]
 #[inline]
-pub unsafe fn sub_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs,
-                    n: i32) -> Limb {
+pub unsafe fn sub_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) -> Limb {
     extern "C" {
-        fn ramp_sub_n(wp: *mut Limb, xp: *const Limb, yp: *const Limb,
-                      n: i32) -> Limb;
+        fn ramp_sub_n(wp: *mut Limb, xp: *const Limb, yp: *const Limb, n: i32) -> Limb;
     }
 
     ramp_sub_n(&mut *wp, &*xp, &*yp, n)
@@ -133,18 +129,14 @@ pub unsafe fn sub_n(mut wp: LimbsMut, xp: Limbs, yp: Limbs,
  */
 #[cfg(not(asm))]
 #[inline]
-pub unsafe fn sub_n(wp: LimbsMut, xp: Limbs, yp: Limbs,
-                    n: i32) -> Limb {
+pub unsafe fn sub_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) -> Limb {
     sub_n_generic(wp, xp, yp, n)
 }
 
 macro_rules! aors {
     ($op:ident, $lop:ident, $f:ident) => {
         #[inline]
-        pub unsafe fn $op(wp: LimbsMut,
-                          xp: Limbs, xs: i32,
-                          yp: Limbs, ys: i32) -> Limb {
-
+        pub unsafe fn $op(wp: LimbsMut, xp: Limbs, xs: i32, yp: Limbs, ys: i32) -> Limb {
             debug_assert!(xs >= ys);
             debug_assert!(ys >= 0);
 
@@ -152,7 +144,9 @@ macro_rules! aors {
             let carry = $f(wp, xp, yp, ys);
             if carry == 1 {
                 loop {
-                    if i >= xs { return Limb(1); }
+                    if i >= xs {
+                        return Limb(1);
+                    }
 
                     let (x, carry) = Limb::$lop(*xp.offset(i as isize), Limb(1));
                     *wp.offset(i as isize) = x;
@@ -169,7 +163,7 @@ macro_rules! aors {
 
             return Limb(0);
         }
-    }
+    };
 }
 
 aors!(add, add_overflow, add_n);
@@ -178,16 +172,15 @@ aors!(sub, sub_overflow, sub_n);
 macro_rules! aors_1 {
     ($op:ident, $f:ident) => {
         #[inline]
-        pub unsafe fn $op(mut wp: LimbsMut,
-                          xp: Limbs, xs: i32,
-                          y: Limb) -> Limb {
-
+        pub unsafe fn $op(mut wp: LimbsMut, xp: Limbs, xs: i32, y: Limb) -> Limb {
             if xs > 0 {
                 let (v, mut carry) = Limb::$f(*xp, y);
                 *wp = v;
                 let mut i = 1;
                 while carry {
-                    if i >= xs { return Limb(1); }
+                    if i >= xs {
+                        return Limb(1);
+                    }
 
                     let (v, c) = Limb::$f(*xp.offset(i as isize), Limb(1));
                     carry = c;
@@ -197,7 +190,7 @@ macro_rules! aors_1 {
             }
             return Limb(0);
         }
-    }
+    };
 }
 
 aors_1!(add_1, add_overflow);
@@ -226,7 +219,9 @@ pub unsafe fn decr(mut ptr: LimbsMut, decr: Limb) {
             ptr = ptr.offset(1);
             let x = *ptr;
             *ptr = x - 1;
-            if x != 0 { break; }
+            if x != 0 {
+                break;
+            }
         }
     }
 }

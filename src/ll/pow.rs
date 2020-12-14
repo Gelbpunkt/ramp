@@ -106,7 +106,6 @@ pub unsafe fn pow(mut wp: LimbsMut, mut ap: Limbs, mut an: i32, mut exp: u32) {
         bn = ll::normalize(scratch.as_const(), bn + bn);
 
         ll::copy_incr(scratch.as_const(), bp, bn);
-
     }
 
     if shift > 0 {

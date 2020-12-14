@@ -19,7 +19,7 @@ use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Not, Rem, Shl, Shr, Su
 
 use std::intrinsics::assume;
 
-use ::std::num::Wrapping;
+use std::num::Wrapping;
 #[allow(dead_code)]
 type Word = Wrapping<usize>;
 

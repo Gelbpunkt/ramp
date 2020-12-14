@@ -1,14 +1,15 @@
 extern crate ramp;
 
-use std::cmp::Ordering;
 use ramp::Int;
+use std::cmp::Ordering;
 
-#[derive(Debug,Copy,Clone,PartialEq,Eq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 struct GcdResult<T> {
     /// Greatest common divisor.
     gcd: T,
     /// Coefficients such that: gcd(a, b) = c1*a + c2*b
-    c1: T, c2: T,
+    c1: T,
+    c2: T,
 }
 
 /// Calculate greatest common divisor and the corresponding coefficients.
@@ -21,14 +22,24 @@ fn extended_gcd(a: Int, b: Int) -> GcdResult<Int> {
     let mut tmp = Int::zero();
     while r != 0 {
         let quotient = &old_r / &r;
-        tmp.clone_from(&r); r = &old_r - &quotient * r; old_r.clone_from(&tmp);
-        tmp.clone_from(&s); s = &old_s - &quotient * s; old_s.clone_from(&tmp);
-        tmp.clone_from(&t); t = &old_t - &quotient * t; old_t.clone_from(&tmp);
+        tmp.clone_from(&r);
+        r = &old_r - &quotient * r;
+        old_r.clone_from(&tmp);
+        tmp.clone_from(&s);
+        s = &old_s - &quotient * s;
+        old_s.clone_from(&tmp);
+        tmp.clone_from(&t);
+        t = &old_t - &quotient * t;
+        old_t.clone_from(&tmp);
     }
 
     let _quotients = (t, s); // == (a, b) / gcd
 
-    GcdResult { gcd: old_r, c1: old_s, c2: old_t }
+    GcdResult {
+        gcd: old_r,
+        c1: old_s,
+        c2: old_t,
+    }
 }
 
 /// Find the standard representation of a (mod n).
@@ -67,7 +78,16 @@ fn mpow(mut base: Int, mut exp: u32, modulus: &Int) -> Int {
 fn main() {
     let (a, b) = (Int::from(6), Int::from(3));
     let GcdResult { gcd, c1, c2 } = extended_gcd(a.clone(), b.clone());
-    println!("gcd({}, {}) = {}*{} + {}*{} = {}", &a, &b, &c1, &a, &c2, &b, &gcd);
-    println!("7**-1 (mod 10) = {}", inverse(Int::from(7), &Int::from(10)).unwrap());
-    println!("7**1000 (mod 13) = {}", mpow(Int::from(7), 1000, &Int::from(13)));
+    println!(
+        "gcd({}, {}) = {}*{} + {}*{} = {}",
+        &a, &b, &c1, &a, &c2, &b, &gcd
+    );
+    println!(
+        "7**-1 (mod 10) = {}",
+        inverse(Int::from(7), &Int::from(10)).unwrap()
+    );
+    println!(
+        "7**1000 (mod 13) = {}",
+        mpow(Int::from(7), 1000, &Int::from(13))
+    );
 }

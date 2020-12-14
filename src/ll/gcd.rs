@@ -17,12 +17,18 @@ use std::cmp::Ordering;
 use ll;
 use ll::limb_ptr::LimbsMut;
 
-pub unsafe fn gcd(mut gp: LimbsMut, mut ap: LimbsMut, mut an: i32, mut bp: LimbsMut, mut bn: i32) -> i32 {
+pub unsafe fn gcd(
+    mut gp: LimbsMut,
+    mut ap: LimbsMut,
+    mut an: i32,
+    mut bp: LimbsMut,
+    mut bn: i32,
+) -> i32 {
     assert!(an >= bn);
 
     let mut gc = 0;
-    while *ap == 0 && !ll::is_zero(ap.as_const(), an)
-        && *bp == 0 && !ll::is_zero(bp.as_const(), bn) {
+    while *ap == 0 && !ll::is_zero(ap.as_const(), an) && *bp == 0 && !ll::is_zero(bp.as_const(), bn)
+    {
         ap = ap.offset(1);
         bp = bp.offset(1);
         gp = gp.offset(1);
@@ -45,7 +51,6 @@ pub unsafe fn gcd(mut gp: LimbsMut, mut ap: LimbsMut, mut an: i32, mut bp: Limbs
     }
 
     while !ll::is_zero(ap.as_const(), an) {
-
         while *ap == 0 && !ll::is_zero(ap.as_const(), an) {
             ap = ap.offset(1);
             an -= 1;
@@ -77,7 +82,7 @@ pub unsafe fn gcd(mut gp: LimbsMut, mut ap: LimbsMut, mut an: i32, mut bp: Limbs
             Ordering::Less
         };
 
-        if c == Ordering::Greater || c == Ordering::Equal  {
+        if c == Ordering::Greater || c == Ordering::Equal {
             ll::sub(ap, ap.as_const(), an, bp.as_const(), bn);
             ll::shr(ap, ap.as_const(), an, 1);
         } else {

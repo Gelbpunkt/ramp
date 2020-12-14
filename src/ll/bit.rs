@@ -12,7 +12,7 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-use ll::limb::{Limb, BaseInt};
+use ll::limb::{BaseInt, Limb};
 use ll::{same_or_decr, same_or_incr};
 
 use ll::limb_ptr::{Limbs, LimbsMut};
@@ -98,9 +98,13 @@ pub unsafe fn shr(mut rp: LimbsMut, mut xp: Limbs, mut xs: i32, cnt: u32) -> Lim
 
 // Common function for the operations below, since they're all essentially the same
 #[inline(always)]
-unsafe fn bitop<F: Fn(Limb, Limb) -> Limb>(mut wp: LimbsMut,
-                                           mut xp: Limbs, mut yp: Limbs,
-                                           n: i32, op: F) {
+unsafe fn bitop<F: Fn(Limb, Limb) -> Limb>(
+    mut wp: LimbsMut,
+    mut xp: Limbs,
+    mut yp: Limbs,
+    n: i32,
+    op: F,
+) {
     debug_assert!(same_or_incr(wp, n, xp, n));
     debug_assert!(same_or_incr(wp, n, yp, n));
 
@@ -118,9 +122,7 @@ unsafe fn bitop<F: Fn(Limb, Limb) -> Limb>(mut wp: LimbsMut,
  * Performs a bitwise "and" (`&`) of the n least signficant limbs of `xp` and `yp`, storing the
  * result in `wp`
  */
-pub unsafe fn and_n(wp: LimbsMut,
-                    xp: Limbs, yp: Limbs,
-                    n: i32) {
+pub unsafe fn and_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| x & y);
 }
 
@@ -130,9 +132,7 @@ pub unsafe fn and_n(wp: LimbsMut,
  *
  * The operation is x & !y
  */
-pub unsafe fn and_not_n(wp: LimbsMut,
-                     xp: Limbs, yp: Limbs,
-                     n: i32) {
+pub unsafe fn and_not_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| x & !y);
 }
 
@@ -142,9 +142,7 @@ pub unsafe fn and_not_n(wp: LimbsMut,
  *
  * The operation is !(x & y)
  */
-pub unsafe fn nand_n(wp: LimbsMut,
-                     xp: Limbs, yp: Limbs,
-                     n: i32) {
+pub unsafe fn nand_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| !(x & y));
 }
 
@@ -152,9 +150,7 @@ pub unsafe fn nand_n(wp: LimbsMut,
  * Performs a bitwise "or" (`|`) of the n least signficant limbs of `xp` and `yp`, storing the
  * result in `wp`
  */
-pub unsafe fn or_n(wp: LimbsMut,
-                    xp: Limbs, yp: Limbs,
-                    n: i32) {
+pub unsafe fn or_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| x | y);
 }
 
@@ -162,9 +158,7 @@ pub unsafe fn or_n(wp: LimbsMut,
  * Performs a bitwise "or" of the n least signficant limbs of `xp` and `yp`, with the limbs of `yp`
  * being first inverted. The result is stored in `wp`.
  */
-pub unsafe fn or_not_n(wp: LimbsMut,
-                    xp: Limbs, yp: Limbs,
-                    n: i32) {
+pub unsafe fn or_not_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| x | !y);
 }
 
@@ -174,9 +168,7 @@ pub unsafe fn or_not_n(wp: LimbsMut,
  *
  * The operation is !(x | y)
  */
-pub unsafe fn nor_n(wp: LimbsMut,
-                    xp: Limbs, yp: Limbs,
-                    n: i32) {
+pub unsafe fn nor_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| !(x | y));
 }
 
@@ -184,9 +176,7 @@ pub unsafe fn nor_n(wp: LimbsMut,
  * Performs a bitwise "xor" (`^`) of the n least signficant limbs of `xp` and `yp`, storing the
  * result in `wp`
  */
-pub unsafe fn xor_n(wp: LimbsMut,
-                    xp: Limbs, yp: Limbs,
-                    n: i32) {
+pub unsafe fn xor_n(wp: LimbsMut, xp: Limbs, yp: Limbs, n: i32) {
     bitop(wp, xp, yp, n, |x, y| x ^ y);
 }
 
@@ -239,7 +229,9 @@ pub unsafe fn scan_1(mut xp: Limbs, mut xs: i32) -> u32 {
         cnt += Limb::BITS as u32;
         xp = xp.offset(1);
         xs -= 1;
-        if xs == 0 { return cnt; }
+        if xs == 0 {
+            return cnt;
+        }
     }
     cnt += (*xp).trailing_zeros() as u32;
 
@@ -258,7 +250,9 @@ pub unsafe fn scan_0(mut xp: Limbs, mut xs: i32) -> u32 {
         cnt += Limb::BITS as u32;
         xp = xp.offset(1);
         xs -= 1;
-        if xs == 0 { return cnt; }
+        if xs == 0 {
+            return cnt;
+        }
     }
     let mut last = (*xp).0;
     while last & 1 != 0 {

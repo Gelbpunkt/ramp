@@ -2,20 +2,25 @@
 // http://benchmarksgame.alioth.debian.org/
 
 extern crate ramp;
-use ramp::Int;
 use ramp::ll::limb::Limb;
+use ramp::Int;
 
 fn main() {
-    let n = std::env::args_os().nth(1)
+    let n = std::env::args_os()
+        .nth(1)
         .and_then(|s| s.into_string().ok())
         .and_then(|n| n.parse().ok())
         .unwrap_or(27);
     for (i, d) in Context::new().enumerate().take(n) {
         print!("{}", d);
-        if (i + 1) % 10 == 0 { println!("\t:{}", i + 1); }
+        if (i + 1) % 10 == 0 {
+            println!("\t:{}", i + 1);
+        }
     }
     if n % 10 != 0 {
-        for _ in n % 10 .. 10 { print!(" "); }
+        for _ in n % 10..10 {
+            print!(" ");
+        }
         println!("\t:{}", n);
     }
 }
@@ -25,7 +30,7 @@ pub struct Context {
     tmp1: Int,
     acc: Int,
     den: Int,
-    num: Int
+    num: Int,
 }
 impl Context {
     pub fn new() -> Context {
@@ -34,7 +39,7 @@ impl Context {
             tmp1: Int::zero(),
             acc: Int::zero(),
             den: Int::one(),
-            num: Int::one()
+            num: Int::one(),
         }
     }
     fn extract_digit(&mut self, nth: Limb) -> Limb {
@@ -65,9 +70,13 @@ impl Iterator for Context {
     fn next(&mut self) -> Option<Limb> {
         loop {
             self.next_term();
-            if self.num > self.acc { continue; }
+            if self.num > self.acc {
+                continue;
+            }
             let d = self.extract_digit(Limb(3));
-            if d != self.extract_digit(Limb(4)) { continue; }
+            if d != self.extract_digit(Limb(4)) {
+                continue;
+            }
 
             self.eliminate_digit(d);
             return Some(d);

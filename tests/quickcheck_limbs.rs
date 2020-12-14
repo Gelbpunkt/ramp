@@ -1,11 +1,11 @@
+extern crate num_bigint;
 extern crate quickcheck;
 extern crate ramp;
-extern crate num_bigint;
 
+use num_bigint::BigUint;
 use quickcheck::TestResult;
 use ramp::ll::limb;
 use ramp::ll::limb::Limb;
-use num_bigint::BigUint;
 
 #[cfg(feature = "full-quickcheck")]
 const QUICKCHECK_THOROUGNESS: u64 = 100;
@@ -40,13 +40,21 @@ macro_rules! quickcheck {
     )
 }
 
-macro_rules! B { () => { BigUint::from(usize::max_value()) + BigUint::from(1usize) } }
-macro_rules! l { ($e:expr) => { Limb($e as limb::BaseInt) } }
+macro_rules! B {
+    () => {
+        BigUint::from(usize::max_value()) + BigUint::from(1usize)
+    };
+}
+macro_rules! l {
+    ($e:expr) => {
+        Limb($e as limb::BaseInt)
+    };
+}
 macro_rules! b  {   ($e:expr) => { BigUint::from($e as usize) };
                     ($h:expr,$l:expr) => { b!($h) * B!() + b!($l) }
                 }
 
-quickcheck!{
+quickcheck! {
     fn check_add(ha:usize, la:usize, hb:usize, lb:usize) -> TestResult {
         let a = b!(ha,la);
         let b = b!(hb,lb);

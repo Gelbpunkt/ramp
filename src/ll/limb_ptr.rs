@@ -14,11 +14,10 @@
 
 use ll::limb::Limb;
 
-use std::{fmt, ops};
+use std::cmp::Ordering;
 #[cfg(debug_assertions)]
 use std::mem;
-use std::cmp::Ordering;
-
+use std::{fmt, ops};
 
 /// A version of `*const Limb` that is bounds-checked when debug assertions are on
 #[derive(Copy, Clone, Debug)]
@@ -42,7 +41,7 @@ macro_rules! api {
             pub unsafe fn new(base: $ptr, start: i32, end: i32) -> $ty {
                 $ty {
                     ptr: base,
-                    bounds: Bounds::new(base as usize, start, end)
+                    bounds: Bounds::new(base as usize, start, end),
                 }
             }
 
@@ -50,8 +49,13 @@ macro_rules! api {
             /// current location.
             #[inline]
             pub unsafe fn offset(self, x: isize) -> $ty {
-                debug_assert!(self.bounds.offset_valid(self.ptr as usize, x),
-                              "invalid offset of {:?} by {}, which should be in {:?}", self.ptr, x, self.bounds);
+                debug_assert!(
+                    self.bounds.offset_valid(self.ptr as usize, x),
+                    "invalid offset of {:?} by {}, which should be in {:?}",
+                    self.ptr,
+                    x,
+                    self.bounds
+                );
                 $ty {
                     ptr: self.ptr.offset(x),
                     bounds: self.bounds,
@@ -79,12 +83,16 @@ macro_rules! api {
         impl ops::Deref for $ty {
             type Target = Limb;
             fn deref(&self) -> &Limb {
-                debug_assert!(self.bounds.can_deref(self.ptr as usize),
-                              "invalid deref of {:?}, which should be in {:?}", self.ptr, self.bounds);
+                debug_assert!(
+                    self.bounds.can_deref(self.ptr as usize),
+                    "invalid deref of {:?}, which should be in {:?}",
+                    self.ptr,
+                    self.bounds
+                );
                 unsafe { &*self.ptr }
             }
         }
-    }
+    };
 }
 
 api!(Limbs, *const Limb);
@@ -101,8 +109,12 @@ impl LimbsMut {
 }
 impl ops::DerefMut for LimbsMut {
     fn deref_mut(&mut self) -> &mut Limb {
-        debug_assert!(self.bounds.can_deref(self.ptr as usize),
-                      "invalid mut deref of {:?}, which should be in {:?}", self.ptr, self.bounds);
+        debug_assert!(
+            self.bounds.can_deref(self.ptr as usize),
+            "invalid mut deref of {:?}, which should be in {:?}",
+            self.ptr,
+            self.bounds
+        );
         unsafe { &mut *self.ptr }
     }
 }
@@ -142,11 +154,17 @@ impl Bounds {
 }
 #[cfg(not(debug_assertions))]
 impl Bounds {
-    fn new(_ptr: usize, _start: i32, _end: i32) -> Bounds { Bounds }
+    fn new(_ptr: usize, _start: i32, _end: i32) -> Bounds {
+        Bounds
+    }
     #[inline]
-    fn can_deref(self, _ptr: usize) -> bool { true }
+    fn can_deref(self, _ptr: usize) -> bool {
+        true
+    }
     #[inline]
-    fn offset_valid(self, _ptr: usize, _offset: isize) -> bool { true }
+    fn offset_valid(self, _ptr: usize, _offset: isize) -> bool {
+        true
+    }
 }
 impl fmt::Debug for Bounds {
     #[cfg(debug_assertions)]
